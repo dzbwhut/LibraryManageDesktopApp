@@ -13,7 +13,7 @@ class SignInWidget(QWidget):
 
     def __init__(self):
         super(SignInWidget, self).__init__()
-        self.resize(900, 600)
+        self.resize(350, 300)
         self.setWindowTitle("欢迎使用图书馆管理系统")
         self.setUpUI()
 
@@ -23,7 +23,7 @@ class SignInWidget(QWidget):
         self.Hlayout2 = QHBoxLayout()
         self.formlayout = QFormLayout()
 
-        self.label1 = QLabel("学号: ")
+        self.label1 = QLabel("用户名: ")
         labelFont = QFont()
         labelFont.setPixelSize(18)
         lineEditFont = QFont()
@@ -37,22 +37,15 @@ class SignInWidget(QWidget):
 
         self.formlayout.addRow(self.label1, self.lineEdit1)
 
-        self.label2 = QLabel("密码: ")
+        self.label2 = QLabel("密  码: ")
         self.label2.setFont(labelFont)
         self.lineEdit2 = QLineEdit()
         self.lineEdit2.setFixedHeight(32)
         self.lineEdit2.setFixedWidth(180)
         self.lineEdit2.setMaxLength(16)
 
-        # 设置验证
-        reg = QRegExp("PB[0~9]{8}")
-        pValidator = QRegExpValidator(self)
-        pValidator.setRegExp(reg)
-        self.lineEdit1.setValidator(pValidator)
-
-        reg = QRegExp("[a-zA-z0-9]+$")
-        pValidator.setRegExp(reg)
-        self.lineEdit2.setValidator(pValidator)
+        reg = QRegExp("[a-zA-z0-9]+$")        
+        self.lineEdit2.setValidator(QRegExpValidator(reg))
 
         passwordFont = QFont()
         passwordFont.setPixelSize(10)
@@ -60,24 +53,30 @@ class SignInWidget(QWidget):
 
         self.lineEdit2.setEchoMode(QLineEdit.Password)
         self.formlayout.addRow(self.label2, self.lineEdit2)
+        
+        self.label3 = QLabel("")
+        self.label3.setFont(labelFont)        
+        self.label3.setFixedHeight(32)        
+        self.formlayout.addRow(self.label3)
+        
         self.signIn = QPushButton("登 录")
         self.signIn.setFixedWidth(80)
         self.signIn.setFixedHeight(30)
         self.signIn.setFont(labelFont)
         self.formlayout.addRow("", self.signIn)
 
-        self.label = QLabel("欢迎使用图书馆管理系统")
+        self.label = QLabel("管理系统")
         fontlabel = QFont()
         fontlabel.setPixelSize(30)
-        self.label.setFixedWidth(390)
-        # self.label.setFixedHeight(80)
+        self.label.setFixedWidth(150)
+        self.label.setFixedHeight(80)
         self.label.setFont(fontlabel)
         self.Hlayout1.addWidget(self.label, Qt.AlignCenter)
         self.widget1 = QWidget()
         self.widget1.setLayout(self.Hlayout1)
         self.widget2 = QWidget()
         self.widget2.setFixedWidth(300)
-        self.widget2.setFixedHeight(150)
+        self.widget2.setFixedHeight(200)
         self.widget2.setLayout(self.formlayout)
         self.Hlayout2.addWidget(self.widget2, Qt.AlignCenter)
         self.widget = QWidget()
@@ -90,17 +89,17 @@ class SignInWidget(QWidget):
         self.lineEdit1.returnPressed.connect(self.signInCheck)
 
     def signInCheck(self):
-        studentId = self.lineEdit1.text()
+        userName = self.lineEdit1.text()
         password = self.lineEdit2.text()
-        if (studentId == "" or password == ""):
-            print(QMessageBox.warning(self, "警告", "学号和密码不可为空!", QMessageBox.Yes, QMessageBox.Yes))
+        if (userName == "" or password == ""):
+            print(QMessageBox.warning(self, "警告", "用户名和密码不可为空!", QMessageBox.Yes, QMessageBox.Yes))
             return
         # 打开数据库连接
         db = QSqlDatabase.addDatabase("QSQLITE")
         db.setDatabaseName('./db/LibraryManagement.db')
         db.open()
         query = QSqlQuery()
-        sql = "SELECT * FROM user WHERE StudentId='%s'" % (studentId)
+        sql = "SELECT * FROM user WHERE Name='%s'" % (userName)
         query.exec_(sql)
         db.close()
 
@@ -109,12 +108,13 @@ class SignInWidget(QWidget):
         if (not query.next()):
             print(QMessageBox.information(self, "提示", "该账号不存在!", QMessageBox.Yes, QMessageBox.Yes))
         else:
-            if (studentId == query.value(0) and hl.hexdigest() == query.value(2)):
+            if (userName == query.value(1) and hl.hexdigest() == query.value(2)):
                 # 如果是管理员
                 if (query.value(3)==1):
                     self.is_admin_signal.emit()
                 else:
-                    self.is_student_signal.emit(studentId)
+                    #studentId=query.value(0)
+                    self.is_student_signal.emit(query.value(0)) # userName
             else:
                 print(QMessageBox.information(self, "提示", "密码错误!", QMessageBox.Yes, QMessageBox.Yes))
         return

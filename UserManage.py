@@ -1,3 +1,12 @@
+'''   用户管理
+    本来应该包含添加用户，删除用户等操作的，
+    但是为了实现简单，添加用户就用注册代替了，
+    所以所谓用户管理，只是实现了用户的删除操作
+
+    为了删除用户的同时保护数据库的完整性和约束，需要进行以下操作 
+    - 从User表删除该用户 
+    - 将该用户所借阅的所有书籍全部归还
+    '''
 import sys
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
@@ -33,7 +42,7 @@ class UserManage(QDialog):
         self.tableWidget = QTableWidget()
         self.tableWidget.setRowCount(self.userCount)
         self.tableWidget.setColumnCount(2)
-        self.tableWidget.setHorizontalHeaderLabels(['学号', '姓名'])
+        self.tableWidget.setHorizontalHeaderLabels(['读者编号', '姓名'])
         # 不可编辑
         self.tableWidget.setEditTriggers(QAbstractItemView.NoEditTriggers)
         # 标题可拉伸
